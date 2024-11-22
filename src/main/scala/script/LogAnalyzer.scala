@@ -8,7 +8,7 @@ import scala.io.Source
 object LogAnalyzer extends LogAnalyzerHelper {
   def main(args: Array[String]): Unit = {
     if (args.length != 1) {
-      println("Usage: LogAnalyzer <directory_path>")
+      println("Usage: sbt run <directory_path>")
       System.exit(1)
     }
 
@@ -19,8 +19,8 @@ object LogAnalyzer extends LogAnalyzerHelper {
     }
 
     val logFiles = logDirectory.listFiles().filter(_.isFile)
-    val logs = logFiles.flatMap(file => Source.fromFile(file).getLines())
-    println(processLogs(logs))
+    val logs: List[String] = logFiles.flatMap(file => Source.fromFile(file).getLines()).toList
+    processLogs(logs)
 
   }
 }
