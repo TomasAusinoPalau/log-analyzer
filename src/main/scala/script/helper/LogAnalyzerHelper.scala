@@ -4,7 +4,7 @@ import script.model.{LogEntry, UserMetrics}
 
 import java.time.Duration
 
-class LogAnalyzerHelper extends LogEntryHelper {
+trait LogAnalyzerHelper extends LogEntryHelper {
   /**
    * Receives all the logs related to an specific user.
    *
@@ -44,7 +44,7 @@ class LogAnalyzerHelper extends LogEntryHelper {
    * @param logs List of strings.
    * @return List of UserMetrics.
    */
-  private def processMetricsFromLogs(logs: List[String]): List[UserMetrics] = {
+   def processMetricsFromLogs(logs: List[String]): List[UserMetrics] = {
     val logEntries: Map[String, List[LogEntry]] = logs
       .flatMap(parseLogLine)
       .groupBy(_.userId)

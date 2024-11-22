@@ -5,7 +5,7 @@ import script.model.LogEntry
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class LogEntryHelper {
+trait LogEntryHelper {
 
   /**
    * Returns a LogEntry when it's possible to parse the line
