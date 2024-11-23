@@ -32,8 +32,9 @@ Follow these instructions to set up and use the Log Analyzer on your local machi
 
 ### Installation
 ```
-git clone <repository-url>  
+********TO-DO
 cd log-analyzer 
+
 ```
 
 ## Usage

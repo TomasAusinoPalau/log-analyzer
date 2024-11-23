@@ -74,7 +74,6 @@ trait LogAnalyzerHelper extends LogEntryHelper {
    */
   def groupLogsIntoSessions(userEntries: List[LogEntry]): List[List[LogEntry]] = {
     val sortedEntries = userEntries.sortBy(_.timestamp)
-    //La lista de sesiones se construye iterativamente usando foldLeft, que permite acumular el estado a medida que se procesan las entradas.
     sortedEntries.foldLeft(List.empty[List[LogEntry]]) {
       case (Nil, entry) => List(List(entry))
       case (sessions, entry) =>
