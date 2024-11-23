@@ -21,4 +21,19 @@ class LogEntryHelperTests extends AnyFunSuite
       logEntry shouldEqual LogEntry("user1", timestamp)
     }
   }
+  test("should return None when log is empty") {
+    val formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss")
+    val timestamp = LocalDateTime.parse("15/Aug/2016:13:00:00", formatter)
+    val logs = ""
+    val logEntryO = parseLogLine(logs)
+
+    logEntryO shouldEqual None
+  }
+
+  test("should return None when log is malformed") {
+    val logs = "??? GET /ecf/8427e/b443/dc7f/us/er1/1234abc/1dd4d421"
+    val logEntryO = parseLogLine(logs)
+
+    logEntryO shouldEqual None
+  }
 }
