@@ -3,22 +3,24 @@ package script.helper
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import script.model.UserMetrics
+import script.utils.ScriptExecutionContext
 
 import java.io.ByteArrayOutputStream
-import scala.concurrent.ExecutionContext.Implicits.global
-
+import scala.concurrent.ExecutionContext
 trait LogAnalyzerHelperTests extends AnyFunSuite
   with Matchers
   with LogAnalyzerHelper
 
 
-class LogAnalyzerHelperProcessMetricsFromLogsTests extends LogAnalyzerHelperTests {
+class LogAnalyzerHelperLogsToMetricsTests extends LogAnalyzerHelperTests {
+  override implicit val ec: ExecutionContext = ScriptExecutionContext.ec
+
 
   test("should read correctly logs") {
     val logs = List(
       "10.10.3.56 - - 15/Aug/2016:13:00:00 -0500 \"GET /ecf8427e/b443dc7f/user1/1234abc/1dd4d421 HTTP/1.0\" 200 - \"-\" \"-\" 7 \"10.10.23.56\" -"
     )
-    val userMetricsF = processMetricsFromLogs(logs)
+    val userMetricsF = logsToMetrics(logs)
 
     userMetricsF.map { userMetrics =>
         userMetrics should have size 1
@@ -36,7 +38,7 @@ class LogAnalyzerHelperProcessMetricsFromLogsTests extends LogAnalyzerHelperTest
       "10.10.3.56 - - 15/Aug/2016:13:15:00 -0500 \"GET /ecf8427e/b443dc7f/user1/1234abc/1dd4d421 HTTP/1.0\" 200 - \"-\" \"-\" 7 \"10.10.23.56\" -",
       "10.10.3.56 - - 15/Aug/2016:13:18:01 -0500 \"GET /ecf8427e/b443dc7f/user1/1234abc/1dd4d421 HTTP/1.0\" 200 - \"-\" \"-\" 7 \"10.10.23.56\" -"
     )
-    val userMetricsF = processMetricsFromLogs(logs)
+    val userMetricsF = logsToMetrics(logs)
 
     userMetricsF.map { userMetrics =>
       userMetrics should have size 1
@@ -59,7 +61,7 @@ class LogAnalyzerHelperProcessMetricsFromLogsTests extends LogAnalyzerHelperTest
       "10.10.3.56 - - 15/Aug/2016:13:15:00 -0500 \"GET /ecf8427e/b443dc7f/user2/1234abc/1dd4d421 HTTP/1.0\" 200 - \"-\" \"-\" 7 \"10.10.23.56\" -",
       "10.10.3.56 - - 15/Aug/2016:13:18:01 -0500 \"GET /ecf8427e/b443dc7f/user2/1234abc/1dd4d421 HTTP/1.0\" 200 - \"-\" \"-\" 7 \"10.10.23.56\" -"
     )
-    val userMetricsF = processMetricsFromLogs(logs)
+    val userMetricsF = logsToMetrics(logs)
 
     userMetricsF.map { userMetrics =>
       userMetrics should have size 2
@@ -72,7 +74,7 @@ class LogAnalyzerHelperProcessMetricsFromLogsTests extends LogAnalyzerHelperTest
 
   test("should be able to handle empty list") {
     val logs = List()
-    val userMetricsF = processMetricsFromLogs(logs)
+    val userMetricsF = logsToMetrics(logs)
 
     userMetricsF.map { userMetrics =>
       userMetrics should have size 0

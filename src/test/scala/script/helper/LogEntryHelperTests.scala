@@ -23,7 +23,6 @@ class LogEntryHelperTests extends AnyFunSuite
   }
   test("should return None when log is empty") {
     val formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss")
-    val timestamp = LocalDateTime.parse("15/Aug/2016:13:00:00", formatter)
     val logs = ""
     val logEntryO = parseLogLine(logs)
 
