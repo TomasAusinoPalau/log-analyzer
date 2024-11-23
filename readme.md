@@ -8,16 +8,15 @@ Log Analyzer is a command-line tool designed to process and analyze web server l
 
 - **User Session Analysis**: Detects user sessions based on a 10-minute inactivity threshold.
 - **Top User Insights**: Displays top users by page views with session details.
-- **Robust Input Handling**: Supports multiple log files and handles malformed data gracefully.
-
+- **Parallel and non-blocking processing**: File reading and report generation are async and non blocking, providing efficiency and scalability.
 ---
 
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
-2. [Installation](#installation)
-3. [Usage](#usage)
-4. [Output Example](#output-example)
+2. [Usage](#usage)
+3. [Output Example](#output-example)
+4. [Priorities in the Design Process](#priorities-in-the-design-process)
 
 ---
 
@@ -37,7 +36,7 @@ git clone <repository-url>
 cd log-analyzer 
 ```
 
-### Usage
+## Usage
 
 1. Compile the project:
 ```
@@ -46,7 +45,7 @@ sbt compile
 
 2. Run the analyzer with the path to your log files directory:
 ```
-sbt "run /path/to/logs"
+sbt "run /path/to/logsDirectory"
 ```
 
 ## Output Example
@@ -61,4 +60,15 @@ Top users:
 | 71f28176  | 75    | 3    | 35    | 1        |
 | 41f58122  | 65    | 4    | 60    | 10       |
 | 58122233  | 44    | 2    | 121   | 3        |
+
+## Priorities in the Design Process
+
+1. **Simplicity and Clarity**: The codebase was structured to prioritize readability and maintainability, ensuring that can be easy to understand and extend the functionality.
+
+2. **Asynchronous Processing**: Given the nature of log processing and potentially large data volumes, we designed the system to handle tasks asynchronously. This approach optimizes performance and ensures scalability for larger datasets.
+
+3. **Modular Architecture**: Each component was designed with single responsibility principles, allowing individual modules to be tested and reused independently.
+
+4. **Functional Paradigms**: The implementation leverages functional programming principles, such as immutability and higher-order functions, to ensure predictable and reliable behavior.
+
 
