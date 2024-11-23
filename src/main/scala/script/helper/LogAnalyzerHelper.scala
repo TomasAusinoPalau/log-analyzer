@@ -52,9 +52,6 @@ trait LogAnalyzerHelper extends LogEntryHelper {
     val logEntries: Map[String, List[LogEntry]] = logs
       .flatMap(parseLogLine)
       .groupBy(_.userId)
-      .view
-      .mapValues(_.sortBy(_.timestamp))
-      .toMap
 
     val userMetricsFutures = logEntries.map {
       case (userId, userEntries) =>
