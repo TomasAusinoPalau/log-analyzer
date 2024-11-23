@@ -19,7 +19,7 @@ object LogAnalyzer extends LogAnalyzerHelper {
       System.exit(1)
     }
 
-    readLogsFromDirectory(logDirectory).map { logLines =>
+    readLogsFromDirectory(logDirectory).flatMap { logLines =>
       generateUserMetricsReport(logLines)
     }.recover {
       case _ =>

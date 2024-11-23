@@ -7,7 +7,8 @@ import script.model.LogEntry
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class LogEntryHelperTests extends AnyFunSuite
+class LogEntryHelperTests
+  extends AnyFunSuite
   with Matchers
   with LogEntryHelper {
 
@@ -22,7 +23,6 @@ class LogEntryHelperTests extends AnyFunSuite
     }
   }
   test("should return None when log is empty") {
-    val formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss")
     val logs = ""
     val logEntryO = parseLogLine(logs)
 

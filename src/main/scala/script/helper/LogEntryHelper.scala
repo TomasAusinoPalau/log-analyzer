@@ -14,7 +14,6 @@ trait LogEntryHelper {
    */
   def parseLogLine(line: String): Option[LogEntry] = {
     val regex = """^.*? (\d{2}/[A-Za-z]+/\d{4}:\d{2}:\d{2}:\d{2}) .*?GET /.*?/.*?/([^/]+)/.*? .*?$""".r
-    //val regex = """\S+ \S+ \S+ \S+ \S+ "GET /.*?/(.*?)/.*? HTTP.*?" .*""".r
 
     line match {
       case regex(dateTimeStr, userId) =>

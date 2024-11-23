@@ -72,7 +72,7 @@ trait LogAnalyzerHelper extends LogEntryHelper {
    * @param userEntries: List of log entries from a specific user
    * @return List[List[LogEntry]] Each sublist represent a sessions that contains all their the LogEntry's.
    */
-  private def groupLogsIntoSessions(userEntries: List[LogEntry]): List[List[LogEntry]] = {
+  def groupLogsIntoSessions(userEntries: List[LogEntry]): List[List[LogEntry]] = {
     val sortedEntries = userEntries.sortBy(_.timestamp)
     //La lista de sesiones se construye iterativamente usando foldLeft, que permite acumular el estado a medida que se procesan las entradas.
     sortedEntries.foldLeft(List.empty[List[LogEntry]]) {
@@ -90,7 +90,7 @@ trait LogAnalyzerHelper extends LogEntryHelper {
    * @param sessions list of sessions that contain logs
    * @return List[Long] Represent session duration
    */
-  private def calculateSessionDurations(sessions: List[List[LogEntry]]): List[Long] = {
+  def calculateSessionDurations(sessions: List[List[LogEntry]]): List[Long] = {
     sessions.map { session =>
       val start = session.head.timestamp
       val end = session.last.timestamp

@@ -1,19 +1,21 @@
 package script.helper
 
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers
 import script.model.UserMetrics
 import script.utils.ScriptExecutionContext
 
-import java.io.ByteArrayOutputStream
+import java.io.{ByteArrayOutputStream, File}
+import java.nio.file.{Files, Paths}
 import scala.concurrent.ExecutionContext
-trait LogAnalyzerHelperTests extends AnyFunSuite
+trait LogAnalyzerHelperTests
+  extends AsyncFunSuite
   with Matchers
-  with LogAnalyzerHelper
-
+  with LogAnalyzerHelper{
+  override implicit val ec: ExecutionContext = ScriptExecutionContext.ec
+}
 
 class LogAnalyzerHelperLogsToMetricsTests extends LogAnalyzerHelperTests {
-  override implicit val ec: ExecutionContext = ScriptExecutionContext.ec
 
 
   test("should read correctly logs") {
@@ -24,9 +26,9 @@ class LogAnalyzerHelperLogsToMetricsTests extends LogAnalyzerHelperTests {
 
     userMetricsF.map { userMetrics =>
         userMetrics should have size 1
-          userMetrics shouldEqual List (
+        userMetrics shouldEqual List (
           UserMetrics("user1", 1, 1, 0, 0)
-          )
+        )
     }
   }
 
@@ -41,10 +43,10 @@ class LogAnalyzerHelperLogsToMetricsTests extends LogAnalyzerHelperTests {
     val userMetricsF = logsToMetrics(logs)
 
     userMetricsF.map { userMetrics =>
-      userMetrics should have size 1
-      userMetrics shouldEqual List(
-        UserMetrics("user1", 5, 2, 4, 3)
-      )
+        userMetrics should have size 1
+        userMetrics shouldEqual List(
+          UserMetrics("user1", 5, 2, 4, 3)
+        )
     }
   }
 
@@ -64,11 +66,11 @@ class LogAnalyzerHelperLogsToMetricsTests extends LogAnalyzerHelperTests {
     val userMetricsF = logsToMetrics(logs)
 
     userMetricsF.map { userMetrics =>
-      userMetrics should have size 2
-      userMetrics shouldEqual List(
-        UserMetrics("user1", 5, 2, 4, 3),
-        UserMetrics("user2", 5, 2, 4, 3)
-      )
+        userMetrics should have size 2
+        userMetrics shouldEqual List(
+          UserMetrics("user1", 5, 2, 4, 3),
+          UserMetrics("user2", 5, 2, 4, 3)
+        )
     }
   }
 
@@ -77,57 +79,91 @@ class LogAnalyzerHelperLogsToMetricsTests extends LogAnalyzerHelperTests {
     val userMetricsF = logsToMetrics(logs)
 
     userMetricsF.map { userMetrics =>
-      userMetrics should have size 0
-      userMetrics shouldEqual Nil
+        userMetrics should have size 0
+        userMetrics shouldEqual Nil
+      }
     }
-  }
 }
 
 class LogAnalyzerHelperPrintReportTests extends LogAnalyzerHelperTests {
-  test("should print total of six lines (three titles and three top users)") {
-    val userMetrics = List(
-      UserMetrics("user1", 6, 2, 4, 3),
-      UserMetrics("user2", 5, 2, 4, 3),
-      UserMetrics("user3", 4, 2, 4, 3)
-    )
+
+  val userMetricsSample = List(
+    UserMetrics("user1", 6, 2, 4, 3),
+    UserMetrics("user2", 5, 2, 4, 3),
+    UserMetrics("user3", 4, 2, 4, 3)
+  )
+
+  test("should printReport should print total of six lines (three titles and three top users)") {
     val outputStream = new ByteArrayOutputStream()
 
     Console.withOut(outputStream) {
-      printReport(userMetrics).map { _ =>
+      printReport(userMetricsSample).map { _ =>
         val printedLines = outputStream.toString.split(System.lineSeparator()).toList
 
-        printedLines should have size 6
+        printedLines.size should be(6)
 
-        printedLines(0) should include("Total unique users: 3")
-        printedLines(1) should include("Top users")
-        printedLines(2) should include("id              # pages # sess  longest shortest")
+        printedLines(0) should be("Total unique users: 3")
+        printedLines(1) should be("Top users:")
+        printedLines(2) should be("id              # pages # sess  longest shortest")
         printedLines(3) should include("user1")
         printedLines(4) should include("user2")
         printedLines(5) should include("user3")
-      }.recover {
-        case ex: Exception =>
-          fail(s"Future failed with exception: ${ex.getMessage}")
       }
     }
   }
 
   test("should print total of three lines (three titles) because UserMetrics list is Nil") {
-    val userMetrics = Nil
     val outputStream = new ByteArrayOutputStream()
 
     Console.withOut(outputStream) {
-      printReport(userMetrics).map { _ =>
+      printReport(Nil).map { _ =>
         val printedLines = outputStream.toString.split(System.lineSeparator()).toList
 
-        printedLines should have size 6
+        printedLines.size should be(3)
 
-        printedLines(0) should include("Total unique users: 3")
-        printedLines(1) should include("Top users")
-        printedLines(2) should include("id              # pages # sess  longest shortest")
-      }.recover {
-        case ex: Exception =>
-          fail(s"Future failed with exception: ${ex.getMessage}")
+        printedLines(0) should be("Total unique users: 0")
+        printedLines(1) should be("Top users:")
+        printedLines(2) should be("id              # pages # sess  longest shortest")
       }
     }
   }
+}
+
+class LogAnalyzerHelperReadLogsFromDirectoryTests extends LogAnalyzerHelperTests {
+
+  def createTempLogFile(content: String): File = {
+    val tempDir = Files.createTempDirectory("test-logs-dir")
+    val tempFile = Files.createTempFile(tempDir, "test", ".log").toFile
+    Files.write(Paths.get(tempFile.getAbsolutePath), content.getBytes)
+    tempFile
+  }
+
+  val logLine = "10.10.3.56 - - 15/Aug/2016:13:00:00 -0500 \"GET /ecf8427e/b443dc7f/user1/1234abc/1dd4d421 HTTP/1.0\" 200 - \"-\" \"-\" 7 \"10.10.23.56\" -"
+
+  test("should read log files and return their content") {
+    val logFile = createTempLogFile(s"$logLine \n $logLine")
+    val logDirectory = logFile.getParentFile
+
+    val futureLogs = readLogsFromDirectory(logDirectory)
+
+    futureLogs.map { logs =>
+      logs should have size 2
+      logs.head.trim should be(logLine.trim)
+      logs.last.trim should be(logLine.trim)
+    }
+  }
+
+  test("should return Nil because content is empty") {
+    val logFile = createTempLogFile("")
+    val logDirectory = logFile.getParentFile
+
+    val futureLogs = readLogsFromDirectory(logDirectory)
+
+    futureLogs.map { logs =>
+      logs should have size 0
+      logs should be(Nil)
+    }
+  }
+
+
 }
