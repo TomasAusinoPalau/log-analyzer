@@ -17,23 +17,36 @@ trait LogAnalyzerHelper extends LogEntryHelper {
    * @param logDirectory Directory containing log files
    * @return Future[List[String]] representing the splitted log lines
    */
-  def readLogsFromDirectory(logDirectory: File): Future[List[String]] = Future {
-    val logFiles = logDirectory.listFiles().filter(_.isFile)
+  def readLogsFromDirectory(logDirectory: File): Future[List[String]] = {
+    val logFiles = Option(logDirectory.listFiles())
+      .getOrElse(Array.empty)
+      .filter(_.isFile)
 
-    logFiles.flatMap { file =>
-      Using(Source.fromFile(file)) { source =>
-        source.getLines().toList
-      }.getOrElse {
-        println(s"Warning: Failed to read file ${file.getName}")
-        List.empty[String]
-      }
-    }.toList
+    val fileProcessingFutures: List[Future[List[String]]] =
+      logFiles.map { file =>
+        Future {
+          Using(Source.fromFile(file)) { source =>
+            source.getLines().toList
+          }.getOrElse(List.empty[String])
+        }
+      }.toList
+
+    Future.sequence(fileProcessingFutures).map(_.flatten)
   }
 
+  /**
+   * Generates and prints a user metrics report from a list of log lines.
+   *
+   * @param logs List of log lines as strings.
+   * @return A Future that completes when the report has been printed.
+   */
   def generateUserMetricsReport(logs: List[String]): Future[Unit] = {
-    logsToMetrics(logs).flatMap(sortedUsers =>
-      printReport(sortedUsers)
-    )
+    logsToMetrics(logs).flatMap(userMetrics =>
+      printReport(userMetrics)
+    ).recover {
+      case ex: Throwable =>
+        println(s"Failed to generate user metrics report: ${ex.getMessage}")
+    }
   }
 
   /**
@@ -65,10 +78,14 @@ trait LogAnalyzerHelper extends LogEntryHelper {
   }
 
   /**
-   * Receives all the logs related to an specific user.
+   * Groups a user's log entries into sessions based on time intervals.
    *
-   * Group logs into session (10 min. or less between logs).
-   * Also granitizes the chronological order of log entries on each list.
+   * - A session is defined as a group of logs where the time difference between consecutive entries
+   *   is 10 minutes or less.
+   * - If the time difference exceeds 10 minutes, a new session is started.
+   *
+   * Logs are sorted chronologically before grouping to ensure proper session creation.
+   *
    * @param userEntries: List of log entries from a specific user
    * @return List[List[LogEntry]] Each sublist represent a sessions that contains all their the LogEntry's.
    */
@@ -106,13 +123,17 @@ trait LogAnalyzerHelper extends LogEntryHelper {
    * @return Future[Unit].
    */
   def printReport(users: List[UserMetrics]): Future[Unit] = Future {
-    val topUsers = users.sortBy(_.pages).reverse.take(5)
-    println(s"Total unique users: ${users.size}")
-    println("Top users:")
-    println("id              # pages # sess  longest shortest")
-    topUsers.foreach {
-      case UserMetrics(userId, pages, sessions, longest, shortest) =>
-        println(f"$userId%-15s $pages%-7d $sessions%-7d $longest%-7d $shortest%-7d")
+    if (users.isEmpty) {
+      println("No user data available to generate the report.")
+    } else {
+      val topUsers = users.sortBy(_.pages).reverse.take(5)
+      println(s"Total unique users: ${users.size}")
+      println("Top users:")
+      println("id              # pages # sess  longest shortest")
+      topUsers.foreach {
+        case UserMetrics(userId, pages, sessions, longest, shortest) =>
+          println(f"$userId%-15s $pages%-7d $sessions%-7d $longest%-7d $shortest%-7d")
+      }
     }
   }
 }

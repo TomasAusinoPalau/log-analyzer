@@ -4,11 +4,13 @@ import script.model.LogEntry
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import scala.util.Try
 
 trait LogEntryHelper {
 
   /**
-   * Returns a LogEntry when it's possible to parse the line
+   * Returns a LogEntry when it's possible to parse the line.
+   * If it's not able to generate the timestamp parse from the line, will return None.
    * @param line: String
    * @return Option[LogEntry]
    */
@@ -17,11 +19,12 @@ trait LogEntryHelper {
 
     line match {
       case regex(dateTimeStr, userId) =>
-        val formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss")
-        val timestamp = LocalDateTime.parse(dateTimeStr, formatter)
-        Some(LogEntry(userId, timestamp))
+        Try {
+          val formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss")
+          val timestamp = LocalDateTime.parse(dateTimeStr, formatter)
+          LogEntry(userId, timestamp)
+        }.toOption
       case _ => None
     }
   }
-
 }

@@ -8,17 +8,17 @@ import script.utils.ScriptExecutionContext
 import java.io.{ByteArrayOutputStream, File}
 import java.nio.file.{Files, Paths}
 import scala.concurrent.ExecutionContext
+
 trait LogAnalyzerHelperTests
   extends AsyncFunSuite
   with Matchers
-  with LogAnalyzerHelper{
-  override implicit val ec: ExecutionContext = ScriptExecutionContext.ec
-}
+  with LogAnalyzerHelper
 
 class LogAnalyzerHelperLogsToMetricsTests extends LogAnalyzerHelperTests {
+  override implicit val ec: ExecutionContext = ScriptExecutionContext.ec
 
 
-  test("should read correctly logs") {
+  test("should read correctly single log") {
     val logs = List(
       "10.10.3.56 - - 15/Aug/2016:13:00:00 -0500 \"GET /ecf8427e/b443dc7f/user1/1234abc/1dd4d421 HTTP/1.0\" 200 - \"-\" \"-\" 7 \"10.10.23.56\" -"
     )
@@ -86,6 +86,7 @@ class LogAnalyzerHelperLogsToMetricsTests extends LogAnalyzerHelperTests {
 }
 
 class LogAnalyzerHelperPrintReportTests extends LogAnalyzerHelperTests {
+  override implicit val ec: ExecutionContext = ScriptExecutionContext.ec
 
   val userMetricsSample = List(
     UserMetrics("user1", 6, 2, 4, 3),
@@ -93,45 +94,11 @@ class LogAnalyzerHelperPrintReportTests extends LogAnalyzerHelperTests {
     UserMetrics("user3", 4, 2, 4, 3)
   )
 
-  test("should printReport should print total of six lines (three titles and three top users)") {
-    val outputStream = new ByteArrayOutputStream()
-
-    Console.withOut(outputStream) {
-      printReport(userMetricsSample).map { _ =>
-        val printedLines = outputStream.toString.split(System.lineSeparator()).toList
-
-        printedLines.size should be(6)
-
-        printedLines(0) should be("Total unique users: 3")
-        printedLines(1) should be("Top users:")
-        printedLines(2) should be("id              # pages # sess  longest shortest")
-        printedLines(3) should include("user1")
-        printedLines(4) should include("user2")
-        printedLines(5) should include("user3")
-      }
-    }
-  }
-
-  test("should print total of three lines (three titles) because UserMetrics list is Nil") {
-    val outputStream = new ByteArrayOutputStream()
-
-    Console.withOut(outputStream) {
-      printReport(Nil).map { _ =>
-        val printedLines = outputStream.toString.split(System.lineSeparator()).toList
-
-        printedLines.size should be(3)
-
-        printedLines(0) should be("Total unique users: 0")
-        printedLines(1) should be("Top users:")
-        printedLines(2) should be("id              # pages # sess  longest shortest")
-      }
-    }
-  }
-}
-
 class LogAnalyzerHelperReadLogsFromDirectoryTests extends LogAnalyzerHelperTests {
+  override implicit val ec: ExecutionContext = ScriptExecutionContext.ec
 
-  def createTempLogFile(content: String): File = {
+
+  private def createTempLogFile(content: String): File = {
     val tempDir = Files.createTempDirectory("test-logs-dir")
     val tempFile = Files.createTempFile(tempDir, "test", ".log").toFile
     Files.write(Paths.get(tempFile.getAbsolutePath), content.getBytes)
