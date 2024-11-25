@@ -1,12 +1,14 @@
 package script
 
-import script.helper.LogAnalyzerHelper
+import script.helper.{LogAnalyzerHelper, LogEntryHelper}
 import script.utils.ScriptExecutionContext
 
 import java.io.File
 import scala.concurrent.ExecutionContext
 
-object LogAnalyzer extends LogAnalyzerHelper {
+object Main
+  extends LogAnalyzerHelper
+  with LogEntryHelper {
   override implicit val ec: ExecutionContext = ScriptExecutionContext.ec
   def main(args: Array[String]): Unit = {
     if (args.length != 1) {

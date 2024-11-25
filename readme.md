@@ -16,8 +16,9 @@ Log Analyzer is a command-line tool designed to process and analyze web server l
 1. [Getting Started](#getting-started)
 2. [Usage](#usage)
 3. [Output Example](#output-example)
-4. [Core Architecture](#core-architecture)
-5. [Priorities in the Design Process](#priorities-in-the-design-process)
+4. [Test](#test)
+5. [Core Architecture](#core-architecture)
+6. [Priorities in the Design Process](#priorities-in-the-design-process)
 
 ---
 
@@ -67,29 +68,42 @@ Top users:
 | 43122543 | 40      | 4      | 50      | 4        |
 | 52123456 | 33      | 3      | 100     | 1        |
 
+## Test
+
+1. Compile the project:
+```
+sbt compile
+```
+
+2. Run all tests of the project:
+```
+sbt test
+```
+
 ## Core Architecture
 
 This section outlines the key components of the project, focusing on their responsibilities and how they interact to achieve a modular and scalable design. Each component is designed with reusability and clarity in mind to ensure maintainable and efficient log processing.
 
 ### Components
 
-- **LogAnalyzer**:  
+- **Main**:  
   The main class of the project, responsible for orchestrating the overall workflow.
 
 - **LogAnalyzerHelper**:  
   A trait that encapsulates core functionalities, such as reading log files, transforming logs into metrics, and printing user reports. It ensures modularity and reusability.
 
 - **LogEntryHelper**:  
-  A trait providing utility methods for parsing raw log lines into structured `LogEntry` objects. It acts as a reusable component for handling log line parsing logic.
+  A trait providing utility method for parsing raw log lines into structured `LogEntry` objects.
 
 - **ScriptExecutionContext**:  
   Provides a custom thread pool for handling asynchronous operations efficiently, avoiding overloading the global execution context.
+
 ## Priorities in the Design Process
 
-1. **Simplicity and Clarity**: The codebase was structured to prioritize readability and maintainability, ensuring that it is easy to understand and extend the functionality.
+1. **Simplicity and Clarity**: The codebase was structured to prioritize readability and maintainability, ensuring that it is easy to understand.
 
 
-2. **Asynchronous Processing**: Given the nature of log processing and potentially large data volumes, we designed the system to handle tasks asynchronously. 
+2. **Asynchronous Processing**: Given the nature of log processing and potentially large data volumes, the system was designed to handle tasks asynchronously. 
 This approach optimizes performance and ensures scalability for larger datasets without blocking the main thread.
 
 
@@ -100,29 +114,4 @@ This approach optimizes performance and ensures scalability for larger datasets 
 
 
 5. **Robust log parsing**: Regular expression ensures that only logs matching the expected format are processed, reducing the risk of invalid data propagation.
-
-## FAQ (Frequently Asked Questions)
-
-### 1. **What is the purpose of this project?**
-This project is designed to process and analyze log files, extracting key metrics such as user activity, session durations, and usage patterns. The system is modular, scalable, and built for efficient log processing with asynchronous operations.
-
----
-
-### 2. **How does the project handle malformed or invalid log entries?**
-Malformed log entries are filtered out during the parsing process using the `parseLogLine` method. This method ensures only valid logs are processed by returning `None` for entries that do not match the expected format or contain invalid data.
-
----
-
-### 3. **What is the role of `ScriptExecutionContext`?**
-`ScriptExecutionContext` provides a custom thread pool for managing asynchronous operations in the project. It ensures that the global execution context is not overloaded, optimizing the performance of tasks like file reading and metrics generation.
-
----
-
-### 4. **How are logs grouped into sessions?**
-Logs are grouped into sessions using the `groupLogsIntoSessions` method. A session is defined as a group of logs where the time difference between consecutive entries is 10 minutes or less. If the time difference exceeds 10 minutes, a new session is created.
-
----
-
-### 5. **Can the system handle large volumes of log files?**
-Yes, the project is designed to handle large volumes of logs efficiently. It uses asynchronous processing (`Future`) and scalable components like `readLogsFromDirectory` and `logsToMetrics` to ensure performance and reliability when dealing with large datasets.
 
