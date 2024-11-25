@@ -33,7 +33,7 @@ Follow these instructions to set up and use the Log Analyzer on your local machi
 - **Java 8 or newer**
 
 ### Installation
-Non installation required, follow this steps:
+Follow this steps:
 
 1. Unzip the compressed folder OR clone repository 
 ```
