@@ -35,7 +35,10 @@ Follow these instructions to set up and use the Log Analyzer on your local machi
 ### Installation
 Non installation required, follow this steps:
 
-1. Unzip the compressed folder.
+1. Unzip the compressed folder OR clone repository 
+```
+git clone git@github.com:TomasAusinoPalau/log-analyzer.git
+```
 2. Access the log-analyzer directory.
 ```
 cd log-analyzer 
@@ -52,6 +55,7 @@ sbt compile
 ```
 sbt "run /path/to/logs/directory"
 ```
+**Note**: The provided path should be an **absolute path** or a **relative path** from the repository directory you are currently in within the terminal.
 
 ## Output Example
 
@@ -90,10 +94,10 @@ This section outlines the key components of the project, focusing on their respo
   The main class of the project, responsible for orchestrating the overall workflow.
 
 - **LogAnalyzerHelper**:  
-  A trait that encapsulates core functionalities, such as reading log files, transforming logs into metrics, and printing user reports. It ensures modularity and reusability.
+  A trait that encapsulates core functionalities, such transforming logs into metrics, and printing user reports. It ensures modularity and reusability.
 
 - **LogEntryHelper**:  
-  A trait providing utility method for parsing raw log lines into structured `LogEntry` objects.
+  A trait providing utility such as reading log files and a method for parsing raw log lines into structured `LogEntry` objects.
 
 - **ScriptExecutionContext**:  
   Provides a custom thread pool for handling asynchronous operations efficiently, avoiding overloading the global execution context.
